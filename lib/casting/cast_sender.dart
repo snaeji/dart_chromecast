@@ -192,10 +192,35 @@ class CastSender extends Object {
     _castMediaAction('SEEK', map);
   }
 
+  void seekToLive() {
+    Map<String, dynamic> map = {'currentTime': 99999.9};
+    _castMediaAction('SEEK', map);
+  }
+
   void setVolume(double volume) {
     Map<String, dynamic> map = {'volume': min(volume, 1)};
     _castMediaAction('VOLUME', map);
   }
+
+  void muteVolume(bool mute) {
+    if (null != _receiverChannel) {
+      _receiverChannel.sendMessage({
+        'type': 'SET_VOLUME',
+        "volume": { 'muted': mute },
+      });
+    }
+  }
+
+  void subtitlesOn(int trackId) {
+    Map<String, dynamic> map = {'activeTrackIds': [trackId]};
+    _castMediaAction('EDIT_TRACKS_INFO', map);
+  }
+
+  void subtitlesOff() {
+    Map<String, dynamic> map = {'activeTrackIds': []};
+    _castMediaAction('EDIT_TRACKS_INFO', map);
+  }
+
 
   CastSession get castSession => _castSession;
 
