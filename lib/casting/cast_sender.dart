@@ -37,8 +37,10 @@ class CastSender extends Object {
   CastSession _castSession;
   StreamController<CastSession> castSessionController;
   StreamController<CastMediaStatus> castMediaStatusController;
+  StreamController<bool> heartbeatController;
   List<CastMedia> _contentQueue;
   CastMedia _currentCastMedia;
+  DateTime pongTime;
 
   CastSender(this.device) {
     // TODO: _airplay._tcp
@@ -46,6 +48,11 @@ class CastSender extends Object {
 
     castSessionController = StreamController.broadcast();
     castMediaStatusController = StreamController.broadcast();
+    heartbeatController = StreamController.broadcast();
+  }
+
+  void handlePong() {
+    pongTime = DateTime.now();
   }
 
   Future<bool> connect() async {
@@ -142,12 +149,14 @@ class CastSender extends Object {
 
   void loadPlaylist(List<CastMedia> media,
       {append = false, forceNext = false}) {
+    print("loading playlist");
     if (!append) {
       _contentQueue = media;
     } else {
       _contentQueue.addAll(media);
     }
     if (null != _mediaChannel) {
+      print("Not null");
       _handleContentQueue(forceNext: forceNext || !append);
     }
   }
@@ -174,8 +183,6 @@ class CastSender extends Object {
   }
 
   void togglePause() {
-    log.info("TOGGLE_PAUSE");
-    log.info(_castSession?.castMediaStatus.toString());
     if (true == _castSession?.castMediaStatus?.isPlaying) {
       pause();
     } else if (true == _castSession?.castMediaStatus?.isPaused) {
@@ -200,6 +207,15 @@ class CastSender extends Object {
   void setVolume(double volume) {
     Map<String, dynamic> map = {'volume': min(volume, 1)};
     _castMediaAction('VOLUME', map);
+  }
+
+  void setVolume(double volume) {
+    if (null != _receiverChannel) {
+      _receiverChannel.sendMessage({
+        'type': 'SET_VOLUME',
+        "volume": { 'level': min(volume, 1)},
+      });
+    }
   }
 
   void muteVolume(bool mute) {
@@ -271,6 +287,8 @@ class CastSender extends Object {
           _handleReceiverStatus(payloadMap);
         } else if ('MEDIA_STATUS' == payloadMap['type']) {
           _handleMediaStatus(payloadMap);
+        } else if ('PONG' == payloadMap['type']) {
+          handlePong();
         }
       }
     }
@@ -391,6 +409,12 @@ class CastSender extends Object {
   void _heartbeatTick() {
     if (null != _heartbeatChannel) {
       _heartbeatChannel.sendMessage({'type': 'PING'});
+      if (pongTime != null) {
+        if (pongTime.isBefore(DateTime.now().subtract(Duration(seconds: 11)))) {
+          heartbeatController.add(true);
+        }
+      }
+
 
 //      _heartbeatTimer = Timer(Duration(seconds: 5), _heartbeatTick);
       Timer(Duration(seconds: 5), _heartbeatTick);
