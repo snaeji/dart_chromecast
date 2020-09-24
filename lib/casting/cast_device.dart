@@ -79,8 +79,8 @@ class CastDevice extends ChangeNotifier {
           IOClient ioClient = new IOClient(httpClient);
           http.Response response = await ioClient.get(
               'https://${host}:8443/setup/eureka_info?params=name,device_info');
-          Map deviceInfo = jsonDecode(response.body);
-
+          final jsonString = utf8.decode(response.bodyBytes);
+          Map deviceInfo = jsonDecode(jsonString);
           if (deviceInfo['name'] != null && deviceInfo['name'] != 'Unknown') {
             _friendlyName = deviceInfo['name'];
           } else if (deviceInfo['ssid'] != null) {
