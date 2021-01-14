@@ -1,6 +1,7 @@
 class CastMedia {
 
   final String contentId;
+  final String contentUrl;
   String title;
   String subtitle;
   bool autoPlay = true;
@@ -12,6 +13,7 @@ class CastMedia {
 
   CastMedia({
     this.contentId,
+    this.contentUrl,
     this.title = "",
     this.subtitle = "",
     this.autoPlay = true,
@@ -36,6 +38,7 @@ class CastMedia {
       'activeTracks': [],
       'media': {
         'contentId': contentId,
+        'contentUrl': contentUrl,
         'contentType': contentType,
         'streamType': streamType,
         'textTrackStyle': {
@@ -64,7 +67,7 @@ class CastMedia {
       'activeTracks': [],
       'media': {
         'contentId': contentId,
-        'contentType': contentType,
+        'contentUrl': contentUrl,
         'streamType': streamType,
         'textTrackStyle': {
           'edgeType': 'NONE', // can be: "NONE", "OUTLINE", "DROP_SHADOW", "RAISED", "DEPRESSED"
