@@ -20,6 +20,7 @@ class CastMediaStatus {
   final double _volume;
   final double _position;
   final Map _media;
+  final Map _liveSeekableRange;
 
   CastMediaStatus.fromChromeCastMediaStatus(Map mediaStatus)
       : _sessionId = mediaStatus['mediaSessionId'],
@@ -35,7 +36,8 @@ class CastMediaStatus {
         _hasError = 'IDLE' == mediaStatus['playerState'] && 'ERROR' == mediaStatus['idleReason'],
         _volume = null != mediaStatus['volume'] ? mediaStatus['volume']['level'].toDouble() : null,
         _position = mediaStatus['currentTime'].toDouble(),
-        _media = mediaStatus['media'];
+        _media = mediaStatus['media'],
+        _liveSeekableRange = mediaStatus['liveSeekableRange'];
 
   dynamic get sessionId => _sessionId;
 
@@ -63,6 +65,22 @@ class CastMediaStatus {
 
   double get position => _position;
 
+  double get liveOffsetStart {
+    try {
+      return _liveSeekableRange['start'].toDouble() ?? 0.0;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
+  double get liveOffsetEnd {
+    try {
+      return _liveSeekableRange['end'].toDouble() ?? 0.0;
+    } catch (e) {
+      return 0.0;
+    }
+  }
+
   Map get media => _media;
 
   @override
@@ -81,7 +99,8 @@ class CastMediaStatus {
       'hasError': _hasError,
       'volume': _volume,
       'position': _position,
-      'media': _media
+      'media': _media,
+      'liveSeekableRange': _liveSeekableRange,
     });
   }
 
